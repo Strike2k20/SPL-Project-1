@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include "json.hpp"
 
+#include <iostream>
 #include "Server.h"
 
 using namespace std;
@@ -55,4 +56,56 @@ Config Server::readConfig(string configPath) const{
     string policy = config["scheduling_policy"].get<string>();
 
     return Config{blockSize, gpuConfigs, modelConfigs, requestConfigs, policy};
+}
+
+bool Server::step() {
+    if(nonSubmittedRequests.empty() && waitingRequests.empty() && activeRequests.empty()) {
+        return false;
+    }
+    std::vector<Request*> notYet;
+    for (size_t i = 0; i < nonSubmittedRequests.size(); ++i) {
+        Request* request = nonSubmittedRequests[i];
+        if (request->getAdmissionCycle() > cycle) {
+            notYet.push_back(request);
+        } else if (canEverFit(*request)) {
+            waitingRequests.push_back(request);
+        } else {
+            std::cout << "rejected " << request->getId() << " cycle=" << cycle << '\n';
+            delete request;
+        }
+    }
+    nonSubmittedRequests.swap(notYet);
+    admitWaiting();
+    ++cycle;
+    return true;
+}
+
+bool Server::canEverFit(const Request& request) {
+    for (size_t g = 0; g < gpus.size(); ++g) {
+        if (gpus[g].getBlocksForMemory(request.getMaxNeededMemory()) <= gpus[g].getBlocksNum()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void Server::admitWaiting() {
+    if (waitingRequests.empty()) return;
+    std::vector<Request*> eligible(waitingRequests.begin(), waitingRequests.end());
+    //
+    // TODO: POLICY
+    //
+    std::vector<bool> admitted(waitingRequests.size(), false);
+    for (size_t i = 0; i < eligible.size(); ++i) {
+        //
+        // TODO: Write funciton to trys to admit waiting request 
+        //
+    }
+    std::vector<Request*> stillWaiting;
+    for (size_t i = 0; i < waitingRequests.size(); ++i) {
+        if (!admitted[i]) {
+            stillWaiting.push_back(waitingRequests[i]);
+        }
+    }
+    waitingRequests.swap(stillWaiting);
 }
