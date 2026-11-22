@@ -33,9 +33,19 @@ public:
 
     std::size_t getBlocksNum();
 private:
+    // A block does not know which model or prefix it belongs to: this information is kept by the GPU
+    // for each slot
+    struct SlotInfo {
+        bool hasKey;
+        std::string modelID;
+        std::vector<std::string> key;
+        SlotInfo();
+    };
+
     std::size_t blocksNum;
     std::size_t blockSize;
     std::vector<MemoryBlock*> memory;
+    std::vector<SlotInfo> info;
     std::size_t totalReserved;
     std::size_t cachedHits;
     std::size_t evictions;
