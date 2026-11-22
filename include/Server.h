@@ -44,10 +44,15 @@ private:
 
     std::vector<GPU> gpus;
     std::vector<Model*> models;
-    std::vector<Request*> nonSubmittedRequests;
+    std::vector<Request*> nonSubmittedRequests;   
     std::vector<Request*> waitingRequests;
     std::vector<Request*> activeRequests;
     SchedulingPolicy* policy;
+    int cycle;
+
+    bool canEverFit(const Request& request);
+    void admitWaiting();
+    void actActive();
 public:
     Server(std::string configPath);
     bool step();
