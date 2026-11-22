@@ -36,6 +36,9 @@ private:
     std::size_t blocksNum;
     std::size_t blockSize;
     std::vector<MemoryBlock*> memory;
+    std::size_t totalReserved;
+    std::size_t cachedHits;
+    std::size_t evictions;
 };
 
 #endif
