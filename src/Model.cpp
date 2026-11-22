@@ -1,6 +1,29 @@
 #include <cstdint>
 #include "Model.h"
 
+Model::Model(const std::string& id, std::size_t embeddingSize): modelId(id) , embeddingSize(embeddingSize){}
+
+std::vector<std::string> Model::tokenizer(std::string text) const {
+    std::vector<std::string> tokens;
+    std::string current;
+    for (std::size_t i = 0; i <= text.size(); ++i)
+    {
+        if(i == text.size() || text[i] == ' ') {
+            if(current.size() > 0) {
+                tokens.push_back(current);
+                current = "";
+            }
+        }
+        else {
+            const char c = text[i];
+            if((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
+                current += c;
+            }
+        }
+    }
+    return tokens;
+}
+
 std::uint64_t Model::mixByte(std::uint64_t state, unsigned char byte) const {
     state ^= byte;
     state *= 1099511628211ULL;
