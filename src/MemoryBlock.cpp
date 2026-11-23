@@ -92,6 +92,10 @@ MemoryBlock* EmbeddingWorkspace::clone() const {
     return new EmbeddingWorkspace(*this);
 }
 
+int MemoryBlock::getRefCount() const {
+    return refCount;
+}
+
 KVBlock::KVBlock(size_t size) : MemoryBlock(size) {}
 
 EmbeddingWorkspace::EmbeddingWorkspace(size_t size) : MemoryBlock(size) {}

@@ -14,6 +14,11 @@ class MemoryBlock;
 
 class GPU{
 public:
+    ~GPU();
+    void clear();
+    GPU(const GPU& other);
+    GPU& operator=(const GPU& other);
+    
     GPU(std::size_t blocksNum, std::size_t blockSize);
     std::size_t availableSlots() const;
     std::size_t getBlocksForMemory(std::size_t memory) const;
