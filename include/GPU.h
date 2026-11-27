@@ -4,6 +4,7 @@
 #include <string>
 #include <cstddef>
 #include <vector>
+#include <map>
 
 struct PrefixMatch {
     std::size_t matchedTokens;
@@ -18,6 +19,10 @@ public:
     void clear();
     GPU(const GPU& other);
     GPU& operator=(const GPU& other);
+    // Copy Assignment Operator, Constructor, Destructor
+    GPU(GPU&& other)noexcept;
+    GPU& operator=(GPU&& other);
+    // Move Assignment Operator, Constructor
     
     GPU(std::size_t blocksNum, std::size_t blockSize);
     std::size_t availableSlots() const;
@@ -54,6 +59,7 @@ private:
     std::size_t totalReserved;
     std::size_t cachedHits;
     std::size_t evictions;
+    std::map<int,std::size_t> reservations;
 };
 
 #endif
