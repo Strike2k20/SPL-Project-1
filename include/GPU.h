@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <vector>
 #include <map>
+#include "Request.h"
 
 struct PrefixMatch {
     std::size_t matchedTokens;
@@ -15,6 +16,7 @@ class MemoryBlock;
 
 class GPU{
 public:
+    GPU(std::size_t blocksNum, std::size_t blockSize);
     ~GPU();
     void clear();
     GPU(const GPU& other);
@@ -24,7 +26,6 @@ public:
     GPU& operator=(GPU&& other);
     // Move Assignment Operator, Constructor
     
-    GPU(std::size_t blocksNum, std::size_t blockSize);
     std::size_t availableSlots() const;
     std::size_t getBlocksForMemory(std::size_t memory) const;
     void reserve(std::size_t n, const Request& request);
