@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include "GPU.h"
 
 class Model;
 class GPU;
@@ -31,6 +32,9 @@ public:
     int getId() const;
     const Model& getModel() const;
     int getAdmissionCycle() const;
+
+    // Is needed?
+    PrefixMatch findChachedPrefix(const GPU& gpu) const;
 };
 
 class GenerativeRequest: public Request{
