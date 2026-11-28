@@ -68,7 +68,7 @@ std::vector<int> LongestPrefixPolicy::choose(const std::vector<const Request*>& 
     std::vector<std::size_t> key(eligible.size(), 0);
     for (std::size_t i = 0; i < eligible.size(); ++i) {
         for (std::size_t g = 0; g < gpus.size(); ++g) {
-            key[i] = std::max(key[i], eligible[i]->findChachedPrefix(gpus[i]).matchedTokens);
+            key[i] = std::max(key[i], eligible[i]->findCachedPrefix(gpus[i]).matchedTokens);
         }
     }
     return orderByKey(eligible, key, true);

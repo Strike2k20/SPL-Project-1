@@ -68,7 +68,6 @@ private:
     std::size_t evictions;
     std::map<int,std::size_t> reservations;
 
-    void checkSlot(std::size_t slot) const;
     void destroySlot(std::size_t slot);
 };
 

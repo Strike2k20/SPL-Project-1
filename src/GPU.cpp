@@ -1,6 +1,8 @@
 #include "GPU.h"
 #include "MemoryBlock.h"
 
+GPU::SlotInfo::SlotInfo(): hasKey(false), modelID(), key() {}
+
 GPU::GPU(std::size_t blocksNum, std::size_t blockSize): 
     blocksNum(blocksNum), blockSize(blockSize), evictions(0), cachedHits(0),
     memory(blocksNum, nullptr), info(blocksNum), totalReserved(0), reservations() {}
@@ -54,7 +56,9 @@ GPU& GPU::operator=(const GPU& other) {
 GPU::GPU(GPU&& other)noexcept:
     blocksNum(other.blocksNum), blockSize(other.blockSize), evictions(other.evictions), cachedHits(other.cachedHits),
     memory(std::move(other.memory)), info(std::move(other.info)), totalReserved(other.totalReserved), reservations(std::move(other.reservations)) {
-
+    other.memory.clear();
+    other.info.clear();
+    other.reservations.clear();
     other.blocksNum = 0;
     other.blockSize = 0;
     other.evictions = 0;
@@ -76,6 +80,9 @@ GPU& GPU::operator=(GPU&& other)noexcept {
         info = std::move(other.info);
         reservations = std::move(other.reservations);
 
+        other.memory.clear();
+        other.info.clear();
+        other.reservations.clear();
         other.blocksNum = 0;
         other.blockSize = 0;
         other.evictions = 0;
@@ -327,7 +334,87 @@ std::size_t GPU::getEvictions() const {
     return evictions;
 }
 
-void GPU::addCacheHits(std::size_t n) {
+void GPU::destroySlot(std::size_t slot) {
+    delete memory[slot];
+    memory[slot] = nullptr;
+    info[slot] = SlotInfo();
+}
+
+std::size_t GPU::allocateBlock(const Request& request) {
+    std::map<int, std::size_t>::iterator it = reservations.find(request.getId());
+    if (it == reservations.end() || it->second == 0) {
+        return;
+    }
+    // Lowest empty slot; otherwise evict the idle block with the lowest slot index.
+    std::size_t slot = blocksNum;
+    for (std::size_t i = 0; i < blocksNum; ++i) {
+        if (memory[i] == nullptr) {
+            slot = i;
+            break;
+        }
+    }
+    if (slot == blocksNum) {
+        for (std::size_t i = 0; i < blocksNum; ++i) {
+            if (memory[i]->getRefCount() == 0) {
+                slot = i;
+                break;
+            }
+        }
+        if (slot == blocksNum) {
+            return;
+        }
+        destroySlot(slot);
+        ++evictions;
+    }
+    request.allocateOneBlock(*this, slot);   
+    memory[slot]->acquire();                 
+    --it->second;                            
+    --totalReserved;
+    if (it->second == 0) {
+        reservations.erase(it);
+    }
+    return slot;
+}
+
+void GPU::addMemoryBlock(const GenerativeRequest&, std::size_t slot) {
+    delete memory[slot];
+    memory[slot] = new KVBlock(blockSize);
+    info[slot] = SlotInfo();
+}
+
+void GPU::addMemoryBlock(const EmbeddingRequest&, std::size_t slot) {
+    delete memory[slot];
+    memory[slot] = new EmbeddingWorkspace(blockSize);
+    info[slot] = SlotInfo();
+}
+
+void GPU::acquire(std::size_t slot) {
+    memory[slot]->acquire();
+}
+
+void GPU::release(std::size_t slot) {
+    IdleAction action = memory[slot]->release();
+    if (memory[slot]->getRefCount() > 0) {
+        return;
+    }
+    if (action == IdleAction::Destroy || !info[slot].hasKey) {
+        destroySlot(slot);
+    }
+}
+
+int GPU::readFromBlock(std::size_t blockId, std::size_t offset) const {
+    if (blockId >= memory.size() || memory[blockId] == nullptr) {
+        return;
+    }
+    return memory[blockId]->readFromBlock(offset);
+}
+
+void GPU::writeToBlock(std::size_t blockId, std::size_t offset, int value) {
+    if (blockId >= memory.size() || memory[blockId] == nullptr) {
+        return;
+    }
+    memory[blockId]->writeToBlock(offset, value);
+}void GPU::addCacheHits(std::size_t n) {
     cachedHits += n;
 }
 
