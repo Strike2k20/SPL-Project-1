@@ -113,7 +113,7 @@ std::size_t GPU::availableSlots() const {
 std::size_t GPU::allocateBlock(const Request& request) {
     std::map<int, std::size_t>::iterator it = reservations.find(request.getId());
     if (it == reservations.end() || it->second == 0) {
-        throw std::logic_error("GPU::allocateBlock: the request has no reserved memory");
+        return;
     }
     std::size_t slot = memory.size();
     for (std::size_t i = 0; i < memory.size(); ++i) {
@@ -130,7 +130,7 @@ std::size_t GPU::allocateBlock(const Request& request) {
             }
         }
         if (slot == memory.size()) {
-            throw std::logic_error("GPU::allocateBlock: no empty or idle slot");
+            return;
         }
         destroySlot(slot);
         ++evictions;
@@ -158,12 +158,10 @@ void GPU::addMemoryBlock(const EmbeddingRequest&, std::size_t slot) {
 }
 
 void GPU::acquire(std::size_t slot) {
-    checkSlot(slot);
     memory[slot]->acquire();
 }
 
 void GPU::release(std::size_t slot) {
-    checkSlot(slot);
     IdleAction action = memory[slot]->release();
     if (memory[slot]->getRefCount() > 0) {
         return;
@@ -189,7 +187,6 @@ void GPU::copyMemoryFromOtherGPU(const GPU& other, const std::vector<std::size_t
         }
     }
     for (std::size_t b = 0; b < blocks.size(); ++b) {
-        other.checkSlot(blocks[b]);
         const SlotInfo& src = other.info[blocks[b]];
         if (!src.hasKey) {
             continue;
@@ -219,7 +216,7 @@ void GPU::copyMemoryFromOtherGPU(const GPU& other, const std::vector<std::size_t
                 }
             }
             if (slot == memory.size()) {
-                throw std::logic_error("GPU::copyMemoryFromOtherGPU: no free slot to copy into");
+                return;
             }
             destroySlot(slot);
             ++evictions;
@@ -231,7 +228,6 @@ void GPU::copyMemoryFromOtherGPU(const GPU& other, const std::vector<std::size_t
 }
 
 void GPU::assignPrefixToBlock(std::size_t block, const std::vector<std::string>& prefixTokens, const std::string& modelId) {
-    checkSlot(block);
     for (std::size_t i = 0; i < memory.size(); ++i) {
         if (i != block && memory[i] != nullptr && info[i].hasKey && info[i].modelID == modelId
             && info[i].key == prefixTokens) {
@@ -245,12 +241,10 @@ void GPU::assignPrefixToBlock(std::size_t block, const std::vector<std::string>&
 }
 
 int GPU::readFromBlock(std::size_t blockId, std::size_t offset) const {
-    checkSlot(blockId);
     return memory[blockId]->readFromBlock(offset);
 }
 
 void GPU::writeToBlock(std::size_t blockId, std::size_t offset, int value) {
-    checkSlot(blockId);
     memory[blockId]->writeToBlock(offset, value);
 }
 std::size_t GPU::getBlocksForMemory(std::size_t memory) const {
