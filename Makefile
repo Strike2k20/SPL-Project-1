@@ -9,7 +9,7 @@ compile:
 
 	g++ -o bin/server bin/Main.o bin/Model.o bin/Server.o bin/GPU.o bin/MemoryBlock.o bin/Request.o bin/SchedulingPolicy.o
 
-clear:
+clean:
 	echo "Cleaning bin directory"
 	rm -rf bin/*
 
