@@ -69,6 +69,7 @@ private:
     std::map<int,std::size_t> reservations;
 
     void destroySlot(std::size_t slot);
+    void cloneMemoryFrom(const GPU& other);
 };
 
 #endif
