@@ -23,7 +23,7 @@ struct KeyOrderComparator {
 // Sorts the indices by key
 // Descending when "descending = True"
 // Ties broekn by the lower request id
-static std::vector<int> orderByKey(const std::vector<const Request*>& eligible,
+std::vector<int> SchedulingPolicy::orderByKey(const std::vector<const Request*>& eligible,
      const std::vector<std::size_t>& key, bool descending) {
 
     std::vector<int> order(eligible.size());

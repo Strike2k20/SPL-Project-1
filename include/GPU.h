@@ -48,6 +48,7 @@ public:
     void acquireCached(std::size_t slot);         
     std::size_t getCacheHits() const;
     std::size_t getEvictions() const;
+    void addCacheHits(std::size_t n);
 private:
     // A block does not know which model or prefix it belongs to: this information is kept by the GPU
     // for each slot
@@ -66,6 +67,9 @@ private:
     std::size_t cachedHits;
     std::size_t evictions;
     std::map<int,std::size_t> reservations;
+
+    void checkSlot(std::size_t slot) const;
+    void destroySlot(std::size_t slot);
 };
 
 #endif

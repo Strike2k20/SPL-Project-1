@@ -16,6 +16,7 @@ protected:
     std::vector<std::string> tokens;
     std::vector<std::size_t> memoryBlocks;
     std::size_t reservedBlocks;
+    Request(const Request& other, const Model& newModel);   // used by clone()
 public:
     Request(int id, const Model& model, int admissionCycle, std::string prompt);
     virtual std::size_t getNeededMemory(const GPU& gpu) const=0;
@@ -43,6 +44,8 @@ private:
     std::size_t maxOutputTokens;
     std::vector<std::string> outputTokens ; // Holds the tokenized output trimmed to maxOutputTokens
     std::size_t computed; // Tokens of (prompt + ouput)
+
+    GenerativeRequest(const GenerativeRequest& other, const Model& newModel);
 public:
     GenerativeRequest(int id, const Model& model, int admissionCycle, std::string prompt, std::string scriptedOutput,
     std::size_t maxOutputTokens);
@@ -62,6 +65,8 @@ class EmbeddingRequest: public Request{
 private:
     std::size_t processed; // Tokens added to the running sum
     std::vector<int> result; // Mean, filled when the last token is processed 
+
+    EmbeddingRequest(const EmbeddingRequest& other, const Model& newModel);
 public:
     EmbeddingRequest(int id, const Model& model, int admissionCycle, std::string prompt);
     virtual std::size_t getNeededMemory(const GPU& gpu) const;
