@@ -214,7 +214,7 @@ Server& Server::operator=(const Server& other) {
     return *this;
 }
 
-Server& Server::operator=(Server&& other) {
+Server& Server::operator=(Server&& other) noexcept {
     if (this != &other) {
         clear();
         gpus = std::move(other.gpus);
@@ -238,7 +238,7 @@ Server& Server::operator=(Server&& other) {
 }
 
 // The moved-from server owns nothing: no GPUs, models, requests or policy, cycle 0.
-Server::Server(Server&& other) 
+Server::Server(Server&& other) noexcept
     : gpus(std::move(other.gpus)), models(std::move(other.models)),
       nonSubmittedRequests(std::move(other.nonSubmittedRequests)),
       waitingRequests(std::move(other.waitingRequests)), activeRequests(std::move(other.activeRequests)),
@@ -325,7 +325,7 @@ bool Server::tryAdmit(Request *request)
 {
     bool found = false;
     size_t best = 0, bestCached = 0, bestNeeded = 0;
-    PrefixMatch bestMatch = {0, std::vector<size_t>()};
+    PrefixMatch bestMatch;
     for (size_t g = 0; g < gpus.size(); ++g)
     {
         PrefixMatch match = request->findCachedPrefix(gpus[g]);
@@ -355,7 +355,7 @@ bool Server::tryAdmit(Request *request)
     // Another GPU with a longer cached prefix: copy its blocks (longest prefix, then lower index).
     size_t source = best;
     size_t sourceTokens = bestMatch.matchedTokens;
-    PrefixMatch sourceMatch = {0, std::vector<size_t>()};
+    PrefixMatch sourceMatch;
     for (size_t g = 0; g < gpus.size(); ++g)
     {
         if (g == best)

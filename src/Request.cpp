@@ -226,7 +226,3 @@ std::string EmbeddingRequest::getOutput() const {
     out += "]";
     return out;
 }
-
-std::size_t EmbeddingRequest::getNeedToUnreserve() const {
-    return reservedBlocks;
-}

@@ -46,6 +46,7 @@ MemoryBlock& MemoryBlock::operator=(MemoryBlock&& other) {
         other.refCount = 0;
         other.data = nullptr;
     } 
+    return *this;
 }
 
 void MemoryBlock::writeToBlock(std::size_t offset, int value) {

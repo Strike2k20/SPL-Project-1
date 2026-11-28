@@ -333,3 +333,7 @@ PrefixMatch GPU::findLongestCachedPrefix(const std::string& modelId, std::size_t
     }
     return result;
 }
+
+bool GPU::isIdle(std::size_t slot) const {
+    return slot < memory.size() && memory[slot] != nullptr && memory[slot]->getRefCount() == 0;
+}

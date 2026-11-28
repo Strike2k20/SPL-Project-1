@@ -9,6 +9,7 @@
 struct PrefixMatch {
     std::size_t matchedTokens;
     std::vector<std::size_t> blockIds;
+    PrefixMatch() : matchedTokens(0), blockIds() {}
 };
 
 class MemoryBlock;
@@ -25,7 +26,7 @@ public:
     GPU& operator=(const GPU& other);
     // Copy Assignment Operator, Constructor, Destructor
     GPU(GPU&& other)noexcept;
-    GPU& operator=(GPU&& other);
+    GPU& operator=(GPU&& other) noexcept;
     // Move Assignment Operator, Constructor
     
     std::size_t availableSlots() const;
