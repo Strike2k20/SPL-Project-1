@@ -18,6 +18,7 @@ protected:
     std::size_t reservedBlocks;
     Request(const Request& other, const Model& newModel);   // used by clone()
 public:
+    virtual ~Request();
     Request(int id, const Model& model, int admissionCycle, std::string prompt);
     virtual std::size_t getNeededMemory(const GPU& gpu) const=0;
     virtual std::size_t getMaxNeededMemory() const=0;
