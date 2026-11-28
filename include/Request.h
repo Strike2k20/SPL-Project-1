@@ -33,22 +33,47 @@ public:
     const Model& getModel() const;
     int getAdmissionCycle() const;
 
-    // Is needed?
-    PrefixMatch findChachedPrefix(const GPU& gpu) const;
+    // The cached prefix of this request on gpu
+    PrefixMatch findCachedPrefix(const GPU& gpu) const;
 };
 
 class GenerativeRequest: public Request{
 private:
     std::string scriptedOutput;
     std::size_t maxOutputTokens;
+    std::vector<std::string> outputTokens ; // Holds the tokenized output trimmed to maxOutputTokens
+    std::size_t computed; // Tokens of (prompt + ouput)
 public:
     GenerativeRequest(int id, const Model& model, int admissionCycle, std::string prompt, std::string scriptedOutput,
     std::size_t maxOutputTokens);
+    virtual std::size_t getNeededMemory(const GPU& gpu) const;
+    virtual std::size_t getMaxNeededMemory() const;
+    virtual std::vector<std::string> getCacheableTokens() const;
+    virtual void allocateOneBlock(GPU& gpu, std::size_t slot) const;
+    virtual Request* clone(const Model& model) const;
+    virtual void act(GPU& gpu);
+    virtual bool finished() const;
+    virtual void reserveMemory(GPU& gpu);
+    virtual std::string getOutput() const;
+    virtual std::size_t getNeedToUnreserve() const;
 };
 
 class EmbeddingRequest: public Request{
+private:
+    std::size_t processed; // Tokens added to the running sum
+    std::vector<int> result; // Mean, filled when the last token is processed 
 public:
     EmbeddingRequest(int id, const Model& model, int admissionCycle, std::string prompt);
+    virtual std::size_t getNeededMemory(const GPU& gpu) const;
+    virtual std::size_t getMaxNeededMemory() const;
+    virtual std::vector<std::string> getCacheableTokens() const;
+    virtual void allocateOneBlock(GPU& gpu, std::size_t slot) const;
+    virtual Request* clone(const Model& model) const;
+    virtual void act(GPU& gpu);
+    virtual bool finished() const;
+    virtual void reserveMemory(GPU& gpu);
+    virtual std::string getOutput() const;
+    virtual std::size_t getNeedToUnreserve() const;
 };
 
 #endif

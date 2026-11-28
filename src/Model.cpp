@@ -5,6 +5,14 @@
 
 Model::Model(const std::string& id, std::size_t embeddingSize): modelId(id) , embeddingSize(embeddingSize){}
 
+std::size_t Model::getEmbeddingSize() const {
+    return embeddingSize;
+}
+
+const std::string& Model::getId() const {
+    return modelId;
+}
+
 std::vector<std::string> Model::tokenizer(std::string text) const {
     std::vector<std::string> tokens;
     std::string current;
@@ -73,3 +81,4 @@ size_t offset) const {
         gpu.writeToBlock(slot, offset + i, static_cast<int>(value % 2001ULL) - 1000);
     }
 }
+

@@ -42,7 +42,8 @@ public:
     PrefixMatch findLongestCachedPrefix(const std::string& modelId, std::size_t embeddingSize,
                                         const std::vector<std::string>& promptTokens) const;
 
-    std::size_t getBlocksNum();
+    std::size_t getBlocksNum() const;
+    bool isIdle(std::size_t slot) const;
 private:
     // A block does not know which model or prefix it belongs to: this information is kept by the GPU
     // for each slot

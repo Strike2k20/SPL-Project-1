@@ -48,13 +48,24 @@ private:
     std::vector<Request*> waitingRequests;
     std::vector<Request*> activeRequests;
     SchedulingPolicy* policy;
+    std::vector<std::size_t> activeGpu; // activeGpu[i] = GPU index of activeRequests[i]
     int cycle;
 
-    bool canEverFit(const Request& request);
+    void clear();                          // deletes models, requests and policy
+    void cloneFrom(const Server& other);   // deep copy of models, requests and policy
+    void swap(Server& other) noexcept;
+    bool canEverFit(const Request& request) const;
+    bool tryAdmit(Request* request);
     void admitWaiting();
     void actActive();
+
 public:
     Server(std::string configPath);
+    Server(const Server& other);
+    Server& operator=(const Server& other);
+    Server(Server&& other) noexcept;
+    Server& operator=(Server&& other) noexcept;
+    ~Server();
     bool step();
     void serve();
 };
