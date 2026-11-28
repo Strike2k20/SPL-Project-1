@@ -131,8 +131,29 @@ void GPU::unreserve(std::size_t n, const Request& request) {
     }
 }
 
-std::size_t GPU::getBlocksNum() {
+std::size_t GPU::getBlocksNum() const {
     return blocksNum;
+}
+
+std::size_t GPU::getBlockSize() const {
+    return blockSize;
+}
+
+bool GPU::isIdle(std::size_t slot) const {
+    return slot < memory.size() && memory[slot] != nullptr && memory[slot]->getRefCount() == 0;
+}
+
+void GPU::acquireCached(std::size_t slot) {
+    memory[slot]->acquire();
+    ++cachedHits;
+}
+
+std::size_t GPU::getCacheHits() const {
+    return cachedHits;
+}
+
+std::size_t GPU::getEvictions() const {
+    return evictions;
 }
 
 
